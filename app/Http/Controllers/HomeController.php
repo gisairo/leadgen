@@ -53,19 +53,19 @@ class HomeController extends Controller
 
         $messenger = new ATMessenger();
         $apiresults = $messenger->sendMessage($request->phonenumber, $request->message);
-        // dd($rs = (array)($apiresults));
-        // dd($apiresults['data']->SMSMessageData->Recipients[0]);
-        // json
+        
         foreach($apiresults as $result) {
-            // dd($result);
-            $cost = round($apiresults['data']->SMSMessageData->Recipients[0]->cost, 0);
+            //convert from string to double with accurate precision
+            $cost = ($apiresults['data']->SMSMessageData->Recipients[0]->cost);
+            $trimedcost =(double)substr($cost, -7);
+            
             $individualmessage = new Message;
             $individualmessage->message = $request->message;
             $individualmessage->number = $apiresults['data']->SMSMessageData->Recipients[0]->number;
             $individualmessage->status = $apiresults['data']->SMSMessageData->Recipients[0]->status;
             $individualmessage->status_code = $apiresults['data']->SMSMessageData->Recipients[0]->statusCode;
             $individualmessage->message_id = $apiresults['data']->SMSMessageData->Recipients[0]->messageId;
-            $individualmessage->cost = $cost;
+            $individualmessage->cost = $trimedcost;
             $individualmessage->user_id= Auth::id();
 
             //save sent sms and status to db
@@ -74,12 +74,7 @@ class HomeController extends Controller
             }else{
                 return redirect()->action('HomeController@create')->with('status', 'Message not saved');
             }
-            // status is either "Success" or "error message"
-            // echo " Number: " .$result->number;
-            // echo " Status: " .$result->status;
-            // echo " StatusCode: " .$result->statusCode;
-            // echo " MessageId: " .$result->messageId;
-            // echo " Cost: "   .$result->cost."\n";
+          
           }
        
        
@@ -87,6 +82,19 @@ class HomeController extends Controller
     }
     public function export() 
     {
-        return Excel::download(new MessagesExport, 'messages.xlsx');
+        $headings = [
+            'id',
+            'message',
+            'number',
+            'status',
+            'statusCode',
+            'messageId',
+            'cost',
+            'user_id',
+            'date_created',
+            'date_modified',
+        ];
+        $user = Auth::id();
+        return (new MessagesExport($user, $headings))->download($user.'_messages.xlsx');
     }
 }
