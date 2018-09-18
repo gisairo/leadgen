@@ -25,7 +25,7 @@
                         <div class="row mb-4">
                             <a class="btn btn-primary btn-large new-message" href="{{ url('/home/new') }}">New Message</a>
                             <br/> &nbsp;
-                            <a class="btn btn-primary btn-large export" href="{{ url('/home/export') }}">ExportCSV</a>
+                            <a class="btn btn-primary btn-large export" href="{{ url('/home/export') }}">Export Messages</a>
                         </div>
                         
                         
